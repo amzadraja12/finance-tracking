@@ -1,5 +1,7 @@
 import { useState } from 'react'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Dashboard from './pages/Dashboard'
+import UserDetails from './pages/UserDetails'
 import AddUserForm from './components/AddUserForm'
 
 function App() {
@@ -14,15 +16,25 @@ function App() {
   }
 
   return (
-    <>
-      <Dashboard onAddClick={handleAddUserClick} refreshKey={refreshKey} />
-      {showModal && (
-        <AddUserForm 
-          onClose={handleCloseModal} 
-          onUserAdded={handleUserAdded} 
+    <BrowserRouter>
+      <Routes>
+        <Route 
+          path="/" 
+          element={
+            <>
+              <Dashboard onAddClick={handleAddUserClick} refreshKey={refreshKey} />
+              {showModal && (
+                <AddUserForm 
+                  onClose={handleCloseModal} 
+                  onUserAdded={handleUserAdded} 
+                />
+              )}
+            </>
+          } 
         />
-      )}
-    </>
+        <Route path="/user/:userId" element={<UserDetails refreshKey={refreshKey} />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
 

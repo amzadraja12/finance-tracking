@@ -1,8 +1,10 @@
 import { 
   collection, 
   addDoc, 
-  getDocs, 
+  getDocs,
+  getDoc,
   updateDoc, 
+  deleteDoc,
   doc,
   arrayUnion,
   serverTimestamp,
@@ -26,6 +28,21 @@ export const storage = {
     } catch (error) {
       console.error('Error getting users:', error);
       return [];
+    }
+  },
+
+  // Get a single user by ID
+  getUser: async (userId) => {
+    try {
+      const userRef = doc(db, USERS_COLLECTION, userId);
+      const snapshot = await getDoc(userRef);
+      if (snapshot.exists()) {
+        return { id: snapshot.id, ...snapshot.data() };
+      }
+      return null;
+    } catch (error) {
+      console.error('Error getting user:', error);
+      return null;
     }
   },
 
@@ -65,6 +82,18 @@ export const storage = {
       });
     } catch (error) {
       console.error('Error adding payment:', error);
+      throw error;
+    }
+  },
+
+  // Delete a user from Firestore
+  deleteUser: async (userId) => {
+    try {
+      const userRef = doc(db, USERS_COLLECTION, userId);
+      await deleteDoc(userRef);
+      return true;
+    } catch (error) {
+      console.error('Error deleting user:', error);
       throw error;
     }
   }
