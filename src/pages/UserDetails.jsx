@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Wallet, Calendar, AlertCircle, CheckCircle, PlusCircle, Trash2, X, Save } from 'lucide-react';
-import { format } from 'date-fns';
+import { ArrowLeft, Wallet, Calendar, AlertCircle, CheckCircle, PlusCircle, Trash2, X, Save, Hash } from 'lucide-react';
 import { storage } from '../utils/storage';
 import { calculateFinance } from '../utils/financeLogic';
+import { displayBSDate, convertBSToAD } from '../utils/dateConverter';
+import BSDatePicker from '../components/BSDatePicker';
 import '../styles/UserDetails.css';
 
 const UserDetails = ({ refreshKey, isAdmin = false }) => {
@@ -14,7 +15,7 @@ const UserDetails = ({ refreshKey, isAdmin = false }) => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentForm, setPaymentForm] = useState({
     amount: '',
-    date: new Date().toISOString().split('T')[0],
+    date: '',
     note: ''
   });
 
@@ -42,9 +43,13 @@ const UserDetails = ({ refreshKey, isAdmin = false }) => {
     if (!paymentForm.amount || !paymentForm.date) return alert('Please fill all required fields');
 
     try {
+      // Convert BS date to AD for database storage
+      const adDate = convertBSToAD(paymentForm.date);
+      if (!adDate) return alert('Invalid date. Please enter a valid BS date.');
+
       await storage.addPayment(userId, {
         amount: Number(paymentForm.amount),
-        date: paymentForm.date,
+        date: adDate.toISOString().split('T')[0],
         note: paymentForm.note || ''
       });
       
@@ -54,10 +59,10 @@ const UserDetails = ({ refreshKey, isAdmin = false }) => {
       setShowPaymentModal(false);
       setPaymentForm({
         amount: '',
-        date: new Date().toISOString().split('T')[0],
+        date: '',
         note: ''
       });
-} catch {
+    } catch {
       alert('Failed to add payment. Please try again.');
     }
   };
@@ -110,14 +115,20 @@ const UserDetails = ({ refreshKey, isAdmin = false }) => {
       <div className={`user-info-card ${stats.dueAmount <= 0 ? 'paid-status' : 'due-status'}`}>
         <div className="user-info-main">
           <h2 className="user-name">{user.name}</h2>
-<div className="user-meta">
+          
+          <div className="account-info">
+            <span className="account-id-large">
+              <Hash size={18} /> {user.accountNo || 'No Account Number'}
+            </span>
+          </div>
+        <div className="user-meta">
             <span className="meta-item">
-              <Calendar size={16} /> Started: {format(new Date(user.startDate), 'dd MMM yyyy')}
+              <Calendar size={16} /> Started: {displayBSDate(user.startDate)}
             </span>
             <span className="meta-item">
               <Wallet size={16} /> ₹{user.amountPerCycle} / {user.planType}
             </span>
-<span className="meta-item">
+            <span className="meta-item">
               <Calendar size={16} /> {stats.periodsPassed + 1} {stats.periodLabel} passed
             </span>
           </div>
@@ -169,7 +180,7 @@ const UserDetails = ({ refreshKey, isAdmin = false }) => {
             <tbody>
               {sortedPayments.map((payment) => (
                 <tr key={payment.id}>
-                  <td>{format(new Date(payment.date), 'dd MMM yyyy')}</td>
+                  <td>{displayBSDate(payment.date)}</td>
                   <td className="amount-cell">₹{payment.amount.toLocaleString()}</td>
                   <td className="note-cell">{payment.note || '-'}</td>
                 </tr>
@@ -203,11 +214,10 @@ const UserDetails = ({ refreshKey, isAdmin = false }) => {
               </div>
 
               <div className="form-group">
-                <label>Date *</label>
-                <input 
-                  type="date" 
+                <BSDatePicker 
+                  label="Date (बि.स.)"
                   value={paymentForm.date}
-                  onChange={(e) => setPaymentForm({...paymentForm, date: e.target.value})}
+                  onChange={(date) => setPaymentForm({...paymentForm, date})}
                   required
                 />
               </div>

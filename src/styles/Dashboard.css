@@ -244,6 +244,32 @@
   word-break: break-word;
 }
 
+/* Add this to styles/Dashboard.css */
+
+.account-number {
+  margin-bottom: 8px; /* Adds space between account number and the icons below */
+}
+
+.account-id {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: #f3f4f6; /* Light gray background */
+  color: #4b5563; /* Muted gray text */
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Courier New', Courier, monospace; /* Monospace for a "number" look */
+  border: 1px solid #e5e7eb;
+}
+
+/* Optional: Slight color change on hover */
+.user-card:hover .account-id {
+  background-color: #e0e7ff;
+  color: #4338ca;
+  border-color: #c7d2fe;
+}
 .user-details {
   display: flex;
   gap: 16px;

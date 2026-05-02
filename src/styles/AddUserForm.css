@@ -109,6 +109,12 @@
   color: #9ca3af;
 }
 
+.form-hint {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: -2px;
+}
+
 .form-group select {
   cursor: pointer;
   appearance: none;
