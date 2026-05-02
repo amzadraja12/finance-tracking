@@ -1,6 +1,6 @@
 import { differenceInDays, differenceInMonths, startOfDay } from 'date-fns';
 
-export const calculateStatus = (user, payments = []) => {
+export const calculateStatus = (user, payments = [], advanceBalance = 0) => {
   const today = startOfDay(new Date());
   const startDate = startOfDay(new Date(user.startDate));
   
@@ -23,11 +23,18 @@ export const calculateStatus = (user, payments = []) => {
   // We add 1 because usually, the first payment is due on Day 1
   const expectedTotal = (periodsPassed + 1) * user.amountPerCycle;
   const paidTotal = payments.reduce((acc, curr) => acc + curr.amount, 0);
-  const dueAmount = expectedTotal - paidTotal;
+  // Include advance balance in the calculation
+  let computedAdvance = 0;
+  let dueAmount = expectedTotal - paidTotal;
+  if (paidTotal > expectedTotal) {
+    computedAdvance = paidTotal - expectedTotal;
+    dueAmount = 0;
+  }
 
   return {
     expectedTotal,
     paidTotal,
+    advanceBalance: computedAdvance,
     dueAmount,
     status: dueAmount <= 0 ? 'Paid' : 'Due',
     periodsPassed,
@@ -36,5 +43,5 @@ export const calculateStatus = (user, payments = []) => {
 };
 
 export const calculateFinance = (user) => {
-  return calculateStatus(user, user.payments || []);
+  return calculateStatus(user, user.payments || [], user.advanceBalance || 0);
 };

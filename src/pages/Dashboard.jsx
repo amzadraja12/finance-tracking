@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { PlusCircle, Wallet, Calendar, AlertCircle, CheckCircle, Search, Trash2, TrendingUp, TrendingDown, DollarSign, Hash } from 'lucide-react';
 import { storage } from '../utils/storage';
 import { calculateFinance } from '../utils/financeLogic';
+import { formatBSDate, convertADToBS } from '../utils/dateConverter';
 import { displayBSDate } from '../utils/dateConverter';
 import TodayDate from '../components/TodayDate';
 import '../styles/Dashboard.css';
+import QuickPay from '../components/QuickPay';
 
 const Dashboard = ({ onAddClick, refreshKey, isAdmin = false }) => {
   const [users, setUsers] = useState([]);
@@ -25,22 +27,117 @@ const Dashboard = ({ onAddClick, refreshKey, isAdmin = false }) => {
     fetchUsers();
   }, [refreshKey]);
 
-  // Calculate global summary
-  const globalSummary = useMemo(() => {
-    let totalExpected = 0;
-    let totalCollected = 0;
-    
-    users.forEach(user => {
-      const stats = calculateFinance(user);
-      totalExpected += stats.expectedTotal;
-      totalCollected += stats.paidTotal;
-    });
 
-    return {
-      totalExpected,
-      totalCollected,
-      outstanding: totalExpected - totalCollected
-    };
+  // Month selector state
+  const [selectedMonth, setSelectedMonth] = useState(''); // format: 'YYYY-MM'
+
+  // Get all months available in data (BS)
+  const allMonths = useMemo(() => {
+    const monthsSet = new Set();
+    users.forEach(user => {
+      if (!user.payments || !Array.isArray(user.payments)) return;
+      user.payments.forEach(payment => {
+        const dateObj = new Date(payment.date);
+        const bs = convertADToBS(dateObj); // 'YYYY-MM-DD'
+        if (bs) {
+          const [year, month] = bs.split('-');
+          monthsSet.add(`${year}-${month}`);
+        }
+      });
+    });
+    // Sort descending
+    return Array.from(monthsSet).sort((a, b) => b.localeCompare(a));
+  }, [users]);
+
+  // Calculate summary for selected month or global if none
+  const summary = useMemo(() => {
+    if (!selectedMonth) {
+      // Global summary
+      let totalExpected = 0;
+      let totalCollected = 0;
+      users.forEach(user => {
+        const stats = calculateFinance(user);
+        totalExpected += stats.expectedTotal;
+        totalCollected += stats.paidTotal;
+      });
+      return {
+        totalExpected,
+        totalCollected,
+        outstanding: totalExpected - totalCollected
+      };
+    } else {
+      // Monthly summary
+      let totalExpected = 0;
+      let totalCollected = 0;
+      users.forEach(user => {
+        // Expected: if user started before or in this month, add amountPerCycle
+        const start = new Date(user.startDate);
+        const [y, m] = selectedMonth.split('-').map(Number);
+        if (
+          start.getFullYear() < y ||
+          (start.getFullYear() === y && start.getMonth() + 1 <= m)
+        ) {
+          totalExpected += user.amountPerCycle;
+        }
+        // Collected: sum payments in this month
+        if (user.payments && Array.isArray(user.payments)) {
+          user.payments.forEach(payment => {
+            const dateObj = new Date(payment.date);
+            const py = dateObj.getFullYear();
+            const pm = dateObj.getMonth() + 1;
+            if (py === y && pm === m) {
+              totalCollected += payment.amount;
+            }
+          });
+        }
+      });
+      return {
+        totalExpected,
+        totalCollected,
+        outstanding: totalExpected - totalCollected
+      };
+    }
+  }, [users, selectedMonth]);
+
+  // Monthly summary
+  const monthlySummary = useMemo(() => {
+    // { 'YYYY-MM': { expected, collected, outstanding } }
+    const summary = {};
+    users.forEach(user => {
+      if (!user.payments || !Array.isArray(user.payments)) return;
+      user.payments.forEach(payment => {
+        // payment.date should be AD date string
+        const dateObj = new Date(payment.date);
+        const year = dateObj.getFullYear();
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const key = `${year}-${month}`;
+        if (!summary[key]) {
+          summary[key] = { expected: 0, collected: 0 };
+        }
+        summary[key].collected += payment.amount;
+      });
+      // For expected, add user's amountPerCycle for each month since startDate
+      const start = new Date(user.startDate);
+      const now = new Date();
+      let y = start.getFullYear();
+      let m = start.getMonth();
+      const endY = now.getFullYear();
+      const endM = now.getMonth();
+      while (y < endY || (y === endY && m <= endM)) {
+        const key = `${y}-${String(m + 1).padStart(2, '0')}`;
+        if (!summary[key]) summary[key] = { expected: 0, collected: 0 };
+        summary[key].expected += user.amountPerCycle;
+        m++;
+        if (m > 11) { m = 0; y++; }
+      }
+    });
+    // Compute outstanding
+    Object.keys(summary).forEach(key => {
+      summary[key].outstanding = summary[key].expected - summary[key].collected;
+    });
+    // Sort keys descending (latest month first)
+    const sorted = Object.keys(summary).sort((a, b) => b.localeCompare(a));
+    return sorted.map(key => ({ month: key, ...summary[key] }));
   }, [users]);
 
   // Filter users based on search and status
@@ -85,31 +182,66 @@ const Dashboard = ({ onAddClick, refreshKey, isAdmin = false }) => {
       </header>
 
       <TodayDate />
+        {(
+          <QuickPay 
+            users={users} 
+            onPaymentDone={() => navigate(0)} // Simplest way to refresh all state
+          />
+        )}
 
-      {/* Global Summary Header */}
+        {/* Global Summary Header */}
+        <div className="global-summary"></div>
+        
+      {/* Month Selector */}
+      <div className="month-selector-bar">
+        <label htmlFor="month-selector">Select Month (BS): </label>
+        <select
+          id="month-selector"
+          value={selectedMonth}
+          onChange={e => setSelectedMonth(e.target.value)}
+          className="bs-month-selector"
+        >
+          <option value="">All (Global)</option>
+          {allMonths.map(month => {
+            const [year, m] = month.split('-');
+            const nepaliMonths = [
+              'Baishakh', 'Jestha', 'Ashar', 'Shrawan', 'Bhadra', 'Ashoj',
+              'Kartik', 'Mangsir', 'Poush', 'Magh', 'Falgun', 'Chaitra'
+            ];
+            const monthName = nepaliMonths[parseInt(m, 10) - 1] || m;
+            return (
+              <option key={month} value={month}>{monthName} {year}</option>
+            );
+          })}
+        </select>
+      </div>
+
+      {/* Summary Header (dynamic) */}
       <div className="global-summary">
         <div className="summary-card expected">
           <TrendingUp size={24} />
           <div className="summary-content">
             <span className="summary-label">Total Expected</span>
-            <span className="summary-value">₹{globalSummary.totalExpected.toLocaleString()}</span>
+            <span className="summary-value">₹{summary.totalExpected.toLocaleString()}</span>
           </div>
         </div>
         <div className="summary-card collected">
           <DollarSign size={24} />
           <div className="summary-content">
             <span className="summary-label">Total Collected</span>
-            <span className="summary-value">₹{globalSummary.totalCollected.toLocaleString()}</span>
+            <span className="summary-value">₹{summary.totalCollected.toLocaleString()}</span>
           </div>
         </div>
         <div className="summary-card outstanding">
           <TrendingDown size={24} />
           <div className="summary-content">
             <span className="summary-label">Outstanding</span>
-            <span className="summary-value">₹{globalSummary.outstanding.toLocaleString()}</span>
+            <span className="summary-value">₹{summary.outstanding.toLocaleString()}</span>
           </div>
         </div>
       </div>
+
+
 
       {/* Search and Filter */}
       <div className="search-filter-bar">
@@ -184,9 +316,7 @@ const Dashboard = ({ onAddClick, refreshKey, isAdmin = false }) => {
                     <span className="detail-item">
                       <Calendar size={16} /> {user.planType}
                     </span>
-                    <span className="detail-item">
-                      <Wallet size={16} /> ₹{user.amountPerCycle} / cycle
-                    </span>
+                    {/* Removed monthly salary/amount per cycle */}
                     <span className="detail-item">
                       <Calendar size={16} /> {displayBSDate(user.startDate)}
                     </span>
@@ -194,9 +324,14 @@ const Dashboard = ({ onAddClick, refreshKey, isAdmin = false }) => {
                 </div>
 
                 <div className="user-card-right">
-                  <div className={`due-amount ${isPaid ? 'settled' : 'due'}`}>
+<div className={`due-amount ${isPaid ? 'settled' : 'due'}`}>
                     {isPaid ? 'Settled' : `Due: ₹${stats.dueAmount}`}
                   </div>
+                  {stats.advanceBalance > 0 && (
+                    <div className="advance-badge">
+                      Advance: ₹{stats.advanceBalance}
+                    </div>
+                  )}
                   <div className={`status-badge ${isPaid ? 'paid' : 'pending'}`}>
                     {isPaid ? <CheckCircle size={14} /> : <AlertCircle size={14} />}
                     {isPaid ? 'Paid' : 'Due'}

@@ -13,10 +13,11 @@ const UserDetails = ({ refreshKey, isAdmin = false }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [paymentForm, setPaymentForm] = useState({
+const [paymentForm, setPaymentForm] = useState({
     amount: '',
     date: '',
-    note: ''
+    note: '',
+    isAdvance: false
   });
 
   useEffect(() => {
@@ -38,6 +39,18 @@ const UserDetails = ({ refreshKey, isAdmin = false }) => {
     return new Date(b.date) - new Date(a.date);
   });
 
+const handleAmountChange = (value) => {
+    setPaymentForm(prev => ({ ...prev, amount: value }));
+    
+    // Auto-check advance if amount > expected total
+    const numValue = Number(value);
+    if (stats && numValue > stats.expectedTotal && numValue > 0) {
+      setPaymentForm(prev => ({ ...prev, isAdvance: true }));
+    } else if (stats && numValue <= stats.expectedTotal) {
+      setPaymentForm(prev => ({ ...prev, isAdvance: false }));
+    }
+  };
+
   const handleAddPayment = async (e) => {
     e.preventDefault();
     if (!paymentForm.amount || !paymentForm.date) return alert('Please fill all required fields');
@@ -47,10 +60,13 @@ const UserDetails = ({ refreshKey, isAdmin = false }) => {
       const adDate = convertBSToAD(paymentForm.date);
       if (!adDate) return alert('Invalid date. Please enter a valid BS date.');
 
+      const note = paymentForm.isAdvance ? 'Advance Payment' : (paymentForm.note || 'Payment');
+      
       await storage.addPayment(userId, {
         amount: Number(paymentForm.amount),
         date: adDate.toISOString().split('T')[0],
-        note: paymentForm.note || ''
+        note: note,
+        isAdvance: paymentForm.isAdvance
       });
       
       // Refresh user data
@@ -60,7 +76,8 @@ const UserDetails = ({ refreshKey, isAdmin = false }) => {
       setPaymentForm({
         amount: '',
         date: '',
-        note: ''
+        note: '',
+        isAdvance: false
       });
     } catch {
       alert('Failed to add payment. Please try again.');
@@ -134,7 +151,7 @@ const UserDetails = ({ refreshKey, isAdmin = false }) => {
           </div>
         </div>
         
-        <div className="user-stats">
+<div className="user-stats">
           <div className="stat-item">
             <span className="stat-label">Expected</span>
             <span className="stat-value">₹{stats.expectedTotal.toLocaleString()}</span>
@@ -143,6 +160,12 @@ const UserDetails = ({ refreshKey, isAdmin = false }) => {
             <span className="stat-label">Paid</span>
             <span className="stat-value success">₹{stats.paidTotal.toLocaleString()}</span>
           </div>
+          {stats.advanceBalance > 0 && (
+            <div className="stat-item">
+              <span className="stat-label">Advance</span>
+              <span className="stat-value advance">₹{stats.advanceBalance.toLocaleString()}</span>
+            </div>
+          )}
           <div className="stat-item">
             <span className="stat-label">Due</span>
             <span className={`stat-value ${stats.dueAmount > 0 ? 'danger' : 'success'}`}>
@@ -201,16 +224,19 @@ const UserDetails = ({ refreshKey, isAdmin = false }) => {
               </button>
             </div>
 
-            <form onSubmit={handleAddPayment} className="form-container">
+<form onSubmit={handleAddPayment} className="form-container">
               <div className="form-group">
                 <label>Amount (₹) *</label>
                 <input 
                   type="number" 
                   placeholder="0.00"
                   value={paymentForm.amount}
-                  onChange={(e) => setPaymentForm({...paymentForm, amount: e.target.value})}
+                  onChange={(e) => handleAmountChange(e.target.value)}
                   required
                 />
+                {stats && Number(paymentForm.amount) > stats.expectedTotal && Number(paymentForm.amount) > 0 && (
+                  <span className="auto-advance-notice">Auto: Advance payment</span>
+                )}
               </div>
 
               <div className="form-group">
@@ -220,6 +246,17 @@ const UserDetails = ({ refreshKey, isAdmin = false }) => {
                   onChange={(date) => setPaymentForm({...paymentForm, date})}
                   required
                 />
+              </div>
+
+              <div className="form-group">
+                <label className="checkbox-label">
+                  <input 
+                    type="checkbox" 
+                    checked={paymentForm.isAdvance}
+                    onChange={(e) => setPaymentForm({...paymentForm, isAdvance: e.target.checked})}
+                  />
+                  <span>Mark as Advance Payment</span>
+                </label>
               </div>
 
               <div className="form-group">

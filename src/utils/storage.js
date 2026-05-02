@@ -46,7 +46,7 @@ export const storage = {
     }
   },
 
-  // Save a new user to Firestore
+// Save a new user to Firestore
   saveUser: async (newUser) => {
     try {
       const usersRef = collection(db, USERS_COLLECTION);
@@ -54,11 +54,12 @@ export const storage = {
         ...newUser,
         payments: [],
         totalPaid: 0,
+        advanceBalance: 0,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       });
       
-      return { id: docRef.id, ...newUser, payments: [], totalPaid: 0 };
+      return { id: docRef.id, ...newUser, payments: [], totalPaid: 0, advanceBalance: 0 };
     } catch (error) {
       console.error('Error saving user:', error);
       throw error;
@@ -70,7 +71,7 @@ export const storage = {
     try {
       const userRef = doc(db, USERS_COLLECTION, userId);
       
-      // Add payment to payments array
+// Add payment to payments array
       await updateDoc(userRef, {
         payments: arrayUnion({
           ...payment,
@@ -78,6 +79,7 @@ export const storage = {
           date: new Date(payment.date).toISOString()
         }),
         totalPaid: increment(payment.amount),
+        advanceBalance: increment((payment.isAdvance || false) ? payment.amount : 0),
         updatedAt: serverTimestamp()
       });
     } catch (error) {
