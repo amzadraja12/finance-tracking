@@ -1,22 +1,34 @@
 import { useState} from 'react';
 import { X, Save } from 'lucide-react';
 import { storage } from '../utils/storage';
+import { convertBSToAD } from '../utils/dateConverter';
+import BSDatePicker from './BSDatePicker';
 import '../styles/AddUserForm.css';
 
 const AddUserForm = ({ onClose, onUserAdded }) => {
   const [formData, setFormData] = useState({
     name: '',
-    startDate: new Date().toISOString().split('T')[0],
+    accountNo: '',
+    startDateBS: '',
     planType: 'monthly',
     amountPerCycle: ''
   });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.amountPerCycle) return alert("Please fill all fields");
+    if (!formData.name || !formData.accountNo || !formData.startDateBS || !formData.amountPerCycle) {
+      return alert("Please fill all fields");
+    }
+
+    // Convert BS date to AD for database storage
+    const adDate = convertBSToAD(formData.startDateBS);
+    if (!adDate) return alert("Invalid date. Please enter a valid BS date.");
 
     const newUser = {
-      ...formData,
+      name: formData.name,
+      accountNo: formData.accountNo,
+      startDate: adDate.toISOString().split('T')[0],
+      planType: formData.planType,
       amountPerCycle: Number(formData.amountPerCycle),
     };
 
@@ -53,11 +65,21 @@ const AddUserForm = ({ onClose, onUserAdded }) => {
           </div>
 
           <div className="form-group">
-            <label>Start Date</label>
+            <label>Account Number</label>
             <input 
-              type="date" 
-              value={formData.startDate}
-              onChange={(e) => setFormData({...formData, startDate: e.target.value})}
+              type="text" 
+              placeholder="e.g. AC123456"
+              value={formData.accountNo}
+              onChange={(e) => setFormData({...formData, accountNo: e.target.value})}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <BSDatePicker 
+              label="Start Date (बि.स.)"
+              value={formData.startDateBS}
+              onChange={(date) => setFormData({...formData, startDateBS: date})}
               required
             />
           </div>
@@ -68,7 +90,7 @@ const AddUserForm = ({ onClose, onUserAdded }) => {
               value={formData.planType}
               onChange={(e) => setFormData({...formData, planType: e.target.value})}
             >
-<option value="daily">Daily</option>
+              <option value="daily">Daily</option>
               <option value="monthly">Monthly</option>
               <option value="quarterly">Quarterly</option>
             </select>

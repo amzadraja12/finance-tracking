@@ -1,8 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PlusCircle, Wallet, Calendar, AlertCircle, CheckCircle, Search, Trash2, TrendingUp, TrendingDown, DollarSign } from 'lucide-react';
+import { PlusCircle, Wallet, Calendar, AlertCircle, CheckCircle, Search, Trash2, TrendingUp, TrendingDown, DollarSign, Hash } from 'lucide-react';
 import { storage } from '../utils/storage';
 import { calculateFinance } from '../utils/financeLogic';
+import { displayBSDate } from '../utils/dateConverter';
+import TodayDate from '../components/TodayDate';
 import '../styles/Dashboard.css';
 
 const Dashboard = ({ onAddClick, refreshKey, isAdmin = false }) => {
@@ -71,7 +73,7 @@ const Dashboard = ({ onAddClick, refreshKey, isAdmin = false }) => {
   };
 
   return (
-<div className="dashboard-container">
+    <div className="dashboard-container">
       <header className="dashboard-header">
         <h1 className="dashboard-title">💰 Finance Tracker</h1>
         {isAdmin && (
@@ -81,6 +83,8 @@ const Dashboard = ({ onAddClick, refreshKey, isAdmin = false }) => {
           </button>
         )}
       </header>
+
+      <TodayDate />
 
       {/* Global Summary Header */}
       <div className="global-summary">
@@ -172,7 +176,11 @@ const Dashboard = ({ onAddClick, refreshKey, isAdmin = false }) => {
                 )}
                 <div className="user-card-left">
                   <h3 className="user-name">{user.name}</h3>
-<div className="user-details">
+                
+                  <div className="user-details">
+                    <span className="detail-item account-id">
+                      <Hash size={14} /> {user.accountNo || 'No A/C'}
+                    </span>
                     <span className="detail-item">
                       <Calendar size={16} /> {user.planType}
                     </span>
@@ -180,7 +188,7 @@ const Dashboard = ({ onAddClick, refreshKey, isAdmin = false }) => {
                       <Wallet size={16} /> ₹{user.amountPerCycle} / cycle
                     </span>
                     <span className="detail-item">
-                      <Calendar size={16} /> {stats.periodsPassed + 1} {stats.periodLabel}
+                      <Calendar size={16} /> {displayBSDate(user.startDate)}
                     </span>
                   </div>
                 </div>
