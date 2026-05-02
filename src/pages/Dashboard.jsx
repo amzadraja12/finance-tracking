@@ -5,7 +5,7 @@ import { storage } from '../utils/storage';
 import { calculateFinance } from '../utils/financeLogic';
 import '../styles/Dashboard.css';
 
-const Dashboard = ({ onAddClick, refreshKey }) => {
+const Dashboard = ({ onAddClick, refreshKey, isAdmin = false }) => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -71,13 +71,15 @@ const Dashboard = ({ onAddClick, refreshKey }) => {
   };
 
   return (
-    <div className="dashboard-container">
+<div className="dashboard-container">
       <header className="dashboard-header">
         <h1 className="dashboard-title">💰 Finance Tracker</h1>
-        <button onClick={onAddClick} className="btn-add-user">
-          <PlusCircle size={20} className="btn-icon" /> 
-          <span className="btn-text">Add User</span>
-        </button>
+        {isAdmin && (
+          <button onClick={onAddClick} className="btn-add-user">
+            <PlusCircle size={20} className="btn-icon" /> 
+            <span className="btn-text">Add User</span>
+          </button>
+        )}
       </header>
 
       {/* Global Summary Header */}
@@ -159,21 +161,26 @@ const Dashboard = ({ onAddClick, refreshKey }) => {
                 className={`user-card ${isPaid ? 'paid-status' : 'due-status'}`}
                 onClick={() => handleCardClick(user.id)}
               >
-                <button 
-                  className="delete-btn"
-                  onClick={(e) => handleDeleteUser(e, user.id, user.name)}
-                  title="Delete user"
-                >
-                  <Trash2 size={16} />
-                </button>
+{isAdmin && (
+                  <button 
+                    className="delete-btn"
+                    onClick={(e) => handleDeleteUser(e, user.id, user.name)}
+                    title="Delete user"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                )}
                 <div className="user-card-left">
                   <h3 className="user-name">{user.name}</h3>
-                  <div className="user-details">
+<div className="user-details">
                     <span className="detail-item">
                       <Calendar size={16} /> {user.planType}
                     </span>
                     <span className="detail-item">
                       <Wallet size={16} /> ₹{user.amountPerCycle} / cycle
+                    </span>
+                    <span className="detail-item">
+                      <Calendar size={16} /> {stats.periodsPassed + 1} {stats.periodLabel}
                     </span>
                   </div>
                 </div>

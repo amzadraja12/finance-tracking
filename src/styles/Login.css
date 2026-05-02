@@ -1,0 +1,146 @@
+.login-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #4f46e5;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.login-btn:hover {
+  background: #4338ca;
+}
+
+.login-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.login-btn.logout {
+  background: #6b7280;
+}
+
+.login-btn.logout:hover {
+  background: #4b5563;
+}
+
+.login-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.user-email {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Login Options */
+.login-options {
+  display: flex;
+  gap: 8px;
+}
+
+.login-options .login-btn {
+  flex-direction: column;
+  padding: 12px 16px;
+  gap: 4px;
+}
+
+.login-btn.google-btn {
+  background: #4285f4;
+}
+
+.login-btn.google-btn:hover {
+  background: #3367d6;
+}
+
+.login-btn.email-btn {
+  background: #059669;
+}
+
+.login-btn.email-btn:hover {
+  background: #047857;
+}
+
+/* Email Login Form */
+.login-form-container {
+  position: relative;
+}
+
+.email-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: white;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.email-login-form .form-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+}
+
+.email-login-form .form-group:focus-within {
+  border-color: #4f46e5;
+  outline: none;
+}
+
+.email-login-form .form-group svg {
+  color: #6b7280;
+}
+
+.email-login-form input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  outline: none;
+}
+
+.email-login-form input::placeholder {
+  color: #9ca3af;
+}
+
+.email-login-form .login-btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.email-login-form .login-btn.google-btn {
+  background: #6b7280;
+  margin-top: 4px;
+}
+
+@media (max-width: 640px) {
+  .login-btn span {
+    display: none;
+  }
+
+  .user-email {
+    display: none;
+  }
+}

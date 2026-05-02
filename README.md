@@ -2,6 +2,10 @@
 
 A React + Vite application for tracking recurring deposits and investments with Firebase backend. This app helps you manage and monitor financial investments for multiple users with daily or monthly payment plans.
 
+## 🚀 Live Demo
+
+**Visit the live application:** [https://rajshree-tracker.web.app](https://rajshree-tracker.web.app)
+
 ## Features
 
 - **Dashboard View** - View all users and their financial status at a glance
@@ -12,16 +16,21 @@ A React + Vite application for tracking recurring deposits and investments with 
 - **Search & Filter** - Search users and filter by payment status (All/Due/Paid)
 - **Delete Users** - Remove users from the system
 - **Data Persistence** - Firebase Firestore for cloud data storage
+- **Authentication** - Secure login with Google authentication
+- **Admin Access** - Restricted access for authorized administrators only
+- **Progressive Web App (PWA)** - Installable app with offline capabilities
 - **Responsive Design** - Works on desktop and mobile devices
 
 ## Tech Stack
 
 - **Frontend:** React 19, Vite
-- **Backend:** Firebase Firestore
+- **Backend:** Firebase Firestore, Firebase Authentication
 - **Routing:** React Router DOM v7
 - **Icons:** Lucide React
 - **Date Handling:** date-fns
 - **Styling:** Custom CSS
+- **PWA:** Vite PWA Plugin, Service Worker
+- **Deployment:** Firebase Hosting
 
 ## Getting Started
 
@@ -55,11 +64,26 @@ npm run build
 npm run preview
 ```
 
+## Authentication
+
+The app uses Google authentication with admin-only access. Only authorized email addresses can access the application:
+
+- amzadraja12@gmail.com
+- amzadraja123@gmail.com
+
+## Progressive Web App (PWA)
+
+The app is fully PWA-enabled and can be installed on supported devices:
+
+- **Install on Desktop:** Click the install button in the browser address bar
+- **Install on Mobile:** Use the "Add to Home Screen" option
+- **Offline Support:** Basic offline functionality with service worker caching
+
 ## Project Structure
 
 ```
 src/
-├── main.jsx                 # React app entry point
+├── main.jsx                 # React app entry point with PWA service worker
 ├── App.jsx                 # Main app component with routing and modal logic
 ├── firebase.js             # Firebase configuration
 ├── index.css              # Global styles
@@ -69,6 +93,8 @@ src/
 │   └── UserDetails.jsx   # User details page with payment history
 ├── components/
 │   └── AddUserForm.jsx   # Modal form for adding new users
+├── context/
+│   └── AuthContext.jsx   # Authentication context provider
 ├── styles/
 │   ├── Dashboard.css    # Dashboard page styling
 │   ├── AddUserForm.css  # Add user form styling
@@ -76,6 +102,12 @@ src/
 └── utils/
     ├── financeLogic.js  # Financial calculations (expected, paid, due amounts)
     └── storage.js       # Firebase Firestore CRUD operations
+public/
+├── manifest.webmanifest   # PWA manifest file
+├── sw.js                 # Service worker for PWA
+├── icon-192.svg          # PWA icon (192x192)
+├── icon-512.svg          # PWA icon (512x512)
+└── favicon.svg           # Favicon
 ```
 
 ## Usage
@@ -110,6 +142,21 @@ Each user card shows:
 - Amount per cycle
 - Expected/Paid/Due amounts
 - Status indicator (Paid/Due)
+
+## Deployment
+
+The app is deployed using Firebase Hosting:
+
+```bash
+# Install Firebase CLI
+npm install -g firebase-tools
+
+# Login to Firebase
+firebase login
+
+# Deploy to hosting
+firebase deploy --only hosting
+```
 
 ## Scripts
 

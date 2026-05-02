@@ -5,11 +5,19 @@ export const calculateStatus = (user, payments = []) => {
   const startDate = startOfDay(new Date(user.startDate));
   
   let periodsPassed = 0;
+  let periodLabel = '';
 
   if (user.planType === 'daily') {
     periodsPassed = differenceInDays(today, startDate);
+    periodLabel = 'days';
   } else if (user.planType === 'monthly') {
     periodsPassed = differenceInMonths(today, startDate);
+    periodLabel = 'months';
+  } else if (user.planType === 'quarterly') {
+    // Calculate months and divide by 3 to get quarters
+    const monthsPassed = differenceInMonths(today, startDate);
+    periodsPassed = Math.floor(monthsPassed / 3);
+    periodLabel = 'quarters';
   }
 
   // We add 1 because usually, the first payment is due on Day 1
@@ -21,7 +29,9 @@ export const calculateStatus = (user, payments = []) => {
     expectedTotal,
     paidTotal,
     dueAmount,
-    status: dueAmount <= 0 ? 'Paid' : 'Due'
+    status: dueAmount <= 0 ? 'Paid' : 'Due',
+    periodsPassed,
+    periodLabel
   };
 };
 

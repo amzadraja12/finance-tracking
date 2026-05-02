@@ -25,6 +25,7 @@ const AddUserForm = ({ onClose, onUserAdded }) => {
       onUserAdded();
       onClose();
     } catch (error) {
+      console.error(error);
       alert('Unable to save user. Check Firebase configuration and console for details.');
     }
   };
@@ -67,8 +68,9 @@ const AddUserForm = ({ onClose, onUserAdded }) => {
               value={formData.planType}
               onChange={(e) => setFormData({...formData, planType: e.target.value})}
             >
-              <option value="daily">Daily</option>
+<option value="daily">Daily</option>
               <option value="monthly">Monthly</option>
+              <option value="quarterly">Quarterly</option>
             </select>
           </div>
 

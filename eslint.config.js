@@ -17,5 +17,9 @@ export default defineConfig([
       globals: globals.browser,
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
+    rules: {
+      // Allow exporting both components and utilities from same file
+      'react-refresh/only-export-components': 'off',
+    },
   },
 ])

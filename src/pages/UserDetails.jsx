@@ -6,7 +6,7 @@ import { storage } from '../utils/storage';
 import { calculateFinance } from '../utils/financeLogic';
 import '../styles/UserDetails.css';
 
-const UserDetails = ({ refreshKey }) => {
+const UserDetails = ({ refreshKey, isAdmin = false }) => {
   const { userId } = useParams();
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
@@ -96,24 +96,29 @@ const UserDetails = ({ refreshKey }) => {
   return (
     <div className="user-details-container">
       <div className="user-details-header">
-        <button onClick={() => navigate('/')} className="back-btn">
+<button onClick={() => navigate('/')} className="back-btn">
           <ArrowLeft size={20} /> Back
         </button>
-        <button onClick={handleDeleteUser} className="delete-user-btn">
-          <Trash2 size={18} /> Delete User
-        </button>
+        {isAdmin && (
+          <button onClick={handleDeleteUser} className="delete-user-btn">
+            <Trash2 size={18} /> Delete User
+          </button>
+        )}
       </div>
 
       {/* User Info Card */}
       <div className={`user-info-card ${stats.dueAmount <= 0 ? 'paid-status' : 'due-status'}`}>
         <div className="user-info-main">
           <h2 className="user-name">{user.name}</h2>
-          <div className="user-meta">
+<div className="user-meta">
             <span className="meta-item">
               <Calendar size={16} /> Started: {format(new Date(user.startDate), 'dd MMM yyyy')}
             </span>
             <span className="meta-item">
               <Wallet size={16} /> ₹{user.amountPerCycle} / {user.planType}
+            </span>
+<span className="meta-item">
+              <Calendar size={16} /> {stats.periodsPassed + 1} {stats.periodLabel} passed
             </span>
           </div>
         </div>
