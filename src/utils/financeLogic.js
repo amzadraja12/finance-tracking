@@ -2,7 +2,7 @@ import { differenceInDays, differenceInMonths, startOfDay } from 'date-fns';
 
 export const calculateStatus = (user, payments = [], advanceBalance = 0) => {
   const today = startOfDay(new Date());
-  const startDate = startOfDay(new Date(user.startDate));
+  const startDate = startOfDay(new Date(user.startDateAD || user.startDate));
   
   let periodsPassed = 0;
   let periodLabel = '';
