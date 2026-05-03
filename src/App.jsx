@@ -50,10 +50,13 @@ function AppContent() {
   )
 }
 
+import PWAInstall from './PWAInstall';
+
 function App() {
   return (
     <AuthProvider>
       <AppContent />
+      <PWAInstall />
     </AuthProvider>
   )
 }

@@ -1,7 +1,8 @@
 {
   "name": "Finance Tracker App",
-  "short_name": "FinanceTracker",
+  "short_name": "Finance",
   "description": "Track your recurring deposits, finances, and savings goals.",
+
   "start_url": ".",
   "scope": "/",
   "display": "standalone",

@@ -6,7 +6,9 @@ const ASSETS_TO_CACHE = [
   '/manifest.webmanifest',
   '/favicon.svg',
   '/icon-192.svg',
-  '/icon-512.svg'
+  '/icon-512.svg',
+  '/src/index.css',
+  '/src/styles/Dashboard.css'
 ];
 
 self.addEventListener('install', (event) => {

@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PlusCircle, Wallet, Calendar, AlertCircle, CheckCircle, Search, Trash2, TrendingUp, TrendingDown, DollarSign, Hash } from 'lucide-react';
+import { PlusCircle, Calendar, AlertCircle, CheckCircle, Search, Trash2, TrendingUp, TrendingDown, DollarSign, Hash } from 'lucide-react';
 import { storage } from '../utils/storage';
 import { calculateFinance } from '../utils/financeLogic';
-import { formatBSDate, convertADToBS } from '../utils/dateConverter';
+import { convertADToBS } from '../utils/dateConverter';
 import { displayBSDate } from '../utils/dateConverter';
 import TodayDate from '../components/TodayDate';
 import '../styles/Dashboard.css';
