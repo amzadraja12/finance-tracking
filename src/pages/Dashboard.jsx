@@ -49,53 +49,48 @@ const Dashboard = ({ onAddClick, refreshKey, isAdmin = false }) => {
     return Array.from(monthsSet).sort((a, b) => b.localeCompare(a));
   }, [users]);
 
-  // Calculate summary for selected month or global if none
+      // Calculate summary for selected month or global if none
   const summary = useMemo(() => {
     if (!selectedMonth) {
-      // Global summary
+      // Global
       let totalExpected = 0;
       let totalCollected = 0;
+      let totalAdvance = 0;
       users.forEach(user => {
         const stats = calculateFinance(user);
         totalExpected += stats.expectedTotal;
         totalCollected += stats.paidTotal;
+        totalAdvance += stats.advanceBalance;
       });
-      return {
-        totalExpected,
-        totalCollected,
-        outstanding: totalExpected - totalCollected
-      };
+      const outstanding = totalExpected - totalCollected;
+      return { totalExpected, totalCollected, totalAdvance, outstanding };
     } else {
-      // Monthly summary
+      // Monthly
       let totalExpected = 0;
       let totalCollected = 0;
+      let totalAdvance = 0;
+      const [bsYear, bsMonth] = selectedMonth.split('-').map(Number);
       users.forEach(user => {
-        // Expected: if user started before or in this month, add amountPerCycle
+        // Expected
         const start = new Date(user.startDate);
-        const [y, m] = selectedMonth.split('-').map(Number);
-        if (
-          start.getFullYear() < y ||
-          (start.getFullYear() === y && start.getMonth() + 1 <= m)
-        ) {
+        if (start.getFullYear() < bsYear || (start.getFullYear() === bsYear && start.getMonth() + 1 <= bsMonth)) {
           totalExpected += user.amountPerCycle;
         }
-        // Collected: sum payments in this month
-        if (user.payments && Array.isArray(user.payments)) {
+        // Collected & Advance
+        if (user.payments) {
           user.payments.forEach(payment => {
-            const dateObj = new Date(payment.date);
-            const py = dateObj.getFullYear();
-            const pm = dateObj.getMonth() + 1;
-            if (py === y && pm === m) {
+            const bsPaymentDate = convertADToBS(new Date(payment.date));
+            if (bsPaymentDate && bsPaymentDate.startsWith(selectedMonth)) {
               totalCollected += payment.amount;
+              if (payment.isAdvance) {
+                totalAdvance += payment.amount;
+              }
             }
           });
         }
       });
-      return {
-        totalExpected,
-        totalCollected,
-        outstanding: totalExpected - totalCollected
-      };
+      const outstanding = totalExpected - totalCollected;
+      return { totalExpected, totalCollected, totalAdvance, outstanding };
     }
   }, [users, selectedMonth]);
 
@@ -232,6 +227,13 @@ const Dashboard = ({ onAddClick, refreshKey, isAdmin = false }) => {
             <span className="summary-value">₹{summary.totalCollected.toLocaleString()}</span>
           </div>
         </div>
+        <div className="summary-card advance">
+          <TrendingUp size={24} />
+          <div className="summary-content">
+            <span className="summary-label">Total Advance</span>
+            <span className="summary-value">₹{summary.totalAdvance.toLocaleString()}</span>
+          </div>
+        </div>
         <div className="summary-card outstanding">
           <TrendingDown size={24} />
           <div className="summary-content">
@@ -318,7 +320,7 @@ const Dashboard = ({ onAddClick, refreshKey, isAdmin = false }) => {
                     </span>
                     {/* Removed monthly salary/amount per cycle */}
                     <span className="detail-item">
-                      <Calendar size={16} /> {displayBSDate(user.startDate)}
+                      <Calendar size={16} /> {displayBSDate(user.startDateBS || user.startDate)}
                     </span>
                   </div>
                 </div>

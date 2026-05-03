@@ -26,10 +26,10 @@ const QuickPay = ({ users, onPaymentDone }) => {
   }, []);
 
 // Calculate due amount for each user
-  const getUserDueAmount = (user) => {
-    const stats = calculateFinance(user);
-    return stats.dueAmount;
-  };
+const getUserDueAmount = (user) => {
+  const stats = calculateFinance(user);
+  return stats.dueAmount;
+};
 
   const trimmedQuery = query.trim().toLowerCase();
   const filteredUsers = users.filter(u => 
