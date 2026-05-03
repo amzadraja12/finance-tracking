@@ -72,7 +72,7 @@ const Dashboard = ({ onAddClick, refreshKey, isAdmin = false }) => {
       const [bsYear, bsMonth] = selectedMonth.split('-').map(Number);
       users.forEach(user => {
         // Expected
-        const start = new Date(user.startDate);
+        const start = new Date(user.startDateAD || user.startDate);
         if (start.getFullYear() < bsYear || (start.getFullYear() === bsYear && start.getMonth() + 1 <= bsMonth)) {
           totalExpected += user.amountPerCycle;
         }
@@ -112,7 +112,7 @@ const Dashboard = ({ onAddClick, refreshKey, isAdmin = false }) => {
         summary[key].collected += payment.amount;
       });
       // For expected, add user's amountPerCycle for each month since startDate
-      const start = new Date(user.startDate);
+      const start = new Date(user.startDateAD || user.startDate);
       const now = new Date();
       let y = start.getFullYear();
       let m = start.getMonth();
@@ -320,7 +320,7 @@ const Dashboard = ({ onAddClick, refreshKey, isAdmin = false }) => {
                     </span>
                     {/* Removed monthly salary/amount per cycle */}
                     <span className="detail-item">
-                      <Calendar size={16} /> {displayBSDate(user.startDateBS || user.startDate)}
+                      <Calendar size={16} /> {displayBSDate(user.startDateAD || user.startDate)}
                     </span>
                   </div>
                 </div>

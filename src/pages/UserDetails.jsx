@@ -140,7 +140,7 @@ const handleAmountChange = (value) => {
           </div>
         <div className="user-meta">
             <span className="meta-item">
-              <Calendar size={16} /> Started: {displayBSDate(user.startDate)}
+              <Calendar size={16} /> Started: {displayBSDate(user.startDateAD || user.startDate)}
             </span>
             <span className="meta-item">
               <Wallet size={16} /> ₹{user.amountPerCycle} / {user.planType}

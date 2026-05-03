@@ -27,7 +27,8 @@ const AddUserForm = ({ onClose, onUserAdded }) => {
     const newUser = {
       name: formData.name,
       accountNo: formData.accountNo,
-      startDate: adDate.toISOString().split('T')[0],
+      startDateAD: adDate.toISOString().split('T')[0],
+      startDateBS: formData.startDateBS,
       planType: formData.planType,
       amountPerCycle: Number(formData.amountPerCycle),
     };

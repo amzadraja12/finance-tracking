@@ -73,9 +73,9 @@ export const getTodayInBothFormats = () => {
   };
 };
 
-export const displayBSDate = (adDate) => {
-  if (!adDate) return '';
-  const date = typeof adDate === 'string' ? new Date(adDate) : adDate;
-  const bsDate = convertADToBS(date);
+export const displayBSDate = (dateField) => {
+  if (!dateField) return 'No Date';
+  const bsDate = convertADToBS(dateField);
+  if (!bsDate) return 'Invalid Date';
   return formatBSDate(bsDate);
 };
